@@ -3,7 +3,7 @@ plugins {
     kotlin("jvm") version "1.4.31"
 }
 
-group = "org.example"
+group = "io.github.chase22"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -12,5 +12,8 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    testCompile("junit", "junit", "4.12")
+    implementation("org.telegram:telegrambotsextensions:5.0.1.1")
+    implementation("ch.qos.logback:logback-classic:1.2.3")
+
+    testImplementation("junit", "junit", "4.12")
 }
