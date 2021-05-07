@@ -9,4 +9,6 @@ fun main() {
     val bot = WatchListBot(config, emptyList())
 
     TelegramBotsApi(DefaultBotSession::class.java).registerBot(bot)
+
+    HealthCheck().start()
 }

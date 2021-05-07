@@ -17,6 +17,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation("org.telegram:telegrambotsextensions:5.0.1.1")
     implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("io.undertow:undertow-core:2.2.7.Final")
 
     testImplementation("junit", "junit", "4.12")
 }
