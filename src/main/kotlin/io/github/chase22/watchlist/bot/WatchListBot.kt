@@ -7,6 +7,8 @@ import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
+import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
@@ -25,21 +27,27 @@ class WatchListBot(private val config: Config, private val commands: List<IBotCo
     override fun processNonCommandUpdate(update: Update) {
         update.channelPost?.let { message ->
             if (message.chatId == config.channelChatId) {
-                execute(
-                    EditMessageText.builder()
-                        .text(message.text)
-                        .replyMarkup(createSingleButtonKeyboard("archive", "archive"))
-                        .chatId(message.chatId.toString())
-                        .messageId(message.messageId)
-                        .build()
-                )
+                message.entities.filter { it.text == "bot_command" }.optionalFirst().ifPresentOrElse({
+                    if (it.text.startsWith("/archive") && message.isReply) {
+                        archiveMessage(message.replyToMessage)
+                    }
+                    execute(message.delete())
+                }) {
+                    execute(
+                        EditMessageText.builder()
+                            .text(message.text)
+                            .replyMarkup(createSingleButtonKeyboard("archive", "archive"))
+                            .chatId(message.chatId.toString())
+                            .messageId(message.messageId)
+                            .build()
+                    )
+                }
             }
         }
         update.callbackQuery?.let {
             if (it.data == "archive") {
                 try {
-                    execute(it.message.forwardTo(config.archiveChatId))
-                    execute(it.message.delete())
+                    archiveMessage(it.message)
                     execute(it.answer("Successfully archived"))
                 } catch (e: TelegramApiException) {
                     if (e is TelegramApiRequestException) {
@@ -50,6 +58,11 @@ class WatchListBot(private val config: Config, private val commands: List<IBotCo
                 }
             }
         }
+    }
+
+    private fun archiveMessage(message: Message) {
+        execute(message.forwardTo(config.archiveChatId))
+        execute(message.delete())
     }
 
     companion object {
